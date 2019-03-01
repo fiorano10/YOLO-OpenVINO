@@ -30,16 +30,18 @@ int main(int argc, char* argv[]){
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     auto version = GetInferenceEngineVersion();
+    std::string cldnn_path = "/opt/intel/computer_vision_sdk/deployment_tools/inference_engine/lib/ubuntu_16.04/intel64/cldnn_global_custom_kernels/cldnn_global_custom_kernels.xml"
     cout << "InferenceEngine Version: " << version->apiVersion.major << "." << version->apiVersion.minor << endl;
     cout << "build: " << version->buildNumber << endl;
 
     // 1. Load a Plugin
     vector<string> pluginDirs {PLUGIN_DIR};
-    InferenceEnginePluginPtr engine_ptr = PluginDispatcher(pluginDirs).getSuitablePlugin(TargetDevice::eCPU);
+    InferenceEnginePluginPtr engine_ptr = PluginDispatcher(pluginDirs).getSuitablePlugin(TargetDevice::eGPU);
     InferencePlugin plugin(engine_ptr);
     cout << "Plugin Version: " << plugin.GetVersion()->apiVersion.major << "." << plugin.GetVersion()->apiVersion.minor << endl;
     cout << "build: " << plugin.GetVersion()->buildNumber << endl;
-    plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
+    plugin.SetConfig({{PluginConfigParams::KEY_CONFIG_FILE, cldnn_path}});
+    //plugin.AddExtension(std::make_shared<Extensions::Cpu::CpuExtensions>());
 
     // 2. Read the Model Intermediate Representation (IR)
     CNNNetReader network_reader;
